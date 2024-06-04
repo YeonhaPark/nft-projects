@@ -1,9 +1,25 @@
 import { Button, Flex, Image } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { FC } from "react";
-
-const Header: FC = () => {
+import { Dispatch, FC, SetStateAction } from "react";
+import { ethers } from "ethers";
+interface HeaderProps {
+  signer: ethers.JsonRpcSigner | null;
+  setSigner: Dispatch<SetStateAction<ethers.JsonRpcSigner | null>>;
+}
+const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
   const navigate = useNavigate();
+
+  const handleMetamaskClick = async () => {
+    try {
+      if (!window.ethereum) return;
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const ret = await provider.getSigner();
+      setSigner(ret);
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <Flex bgColor={"blue.100"} h={24} justifyContent={"space-between"}>
       <Flex
@@ -56,7 +72,11 @@ const Header: FC = () => {
         justifyContent={"end"}
         alignItems={"center"}
       >
-        <Button>Metamask</Button>
+        {signer ? (
+          <Button>{signer.address}</Button>
+        ) : (
+          <Button onClick={handleMetamaskClick}>Metamask</Button>
+        )}
       </Flex>
     </Flex>
   );
