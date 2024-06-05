@@ -1,12 +1,23 @@
-import { Button, Flex, Image } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  Image,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { Dispatch, FC, SetStateAction } from "react";
-import { ethers } from "ethers";
+import { FiChevronDown } from "react-icons/fi";
+import { Dispatch, FC, SetStateAction, useEffect } from "react";
+import { ethers, Contract } from "ethers";
+import mintAbi from "../abis/mintAbi.json";
 interface HeaderProps {
   signer: ethers.JsonRpcSigner | null;
   setSigner: Dispatch<SetStateAction<ethers.JsonRpcSigner | null>>;
+  setMintContract: Dispatch<SetStateAction<ethers.Contract | null>>;
 }
-const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
+const Header: FC<HeaderProps> = ({ signer, setSigner, setMintContract }) => {
   const navigate = useNavigate();
 
   const handleMetamaskClick = async () => {
@@ -20,62 +31,88 @@ const Header: FC<HeaderProps> = ({ signer, setSigner }) => {
       console.log(e);
     }
   };
+
+  useEffect(() => {
+    if (!signer) {
+      setMintContract(null);
+    } else {
+      setMintContract(
+        new Contract(
+          "0xf30b8bbe4a46b7da59f3d55b6c9dcaa1028bbd7a",
+          mintAbi,
+          signer
+        )
+      );
+    }
+  }, [signer, setMintContract]);
   return (
-    <Flex bgColor={"blue.100"} h={24} justifyContent={"space-between"}>
+    <Flex h={24} justifyContent={"space-between"}>
       <Flex
-        bgColor="red.100"
+        flexDir={["column", "column", "row"]}
         w={40}
-        fontSize={16}
+        fontSize={[16, 16, 20]}
         fontWeight={"semibold"}
         alignItems={"center"}
       >
         <Image src="/images/logo.svg" alt="logo" w={16} />
         슬라임 월드
       </Flex>
-      <Flex alignItems={"center"} gap={4}>
+      <Flex alignItems={"center"} gap={[1, 1, 4]}>
         <Button
           variant="link"
-          w={20}
           colorScheme="green"
           onClick={() => navigate("/")}
+          size={["xs", "xs", "md"]}
         >
           Home
         </Button>
         <Button
           variant="link"
-          w={20}
           colorScheme="green"
           onClick={() => navigate("/mint-nft")}
+          size={["xs", "xs", "md"]}
         >
           Minting
         </Button>
         <Button
           variant="link"
-          w={20}
           colorScheme="green"
           onClick={() => navigate("/my-nft")}
+          size={["xs", "xs", "md"]}
         >
           My NFT
         </Button>
         <Button
           variant="link"
-          w={20}
           colorScheme="green"
           onClick={() => navigate("/sale-nft")}
+          size={["xs", "xs", "md"]}
         >
           Market
         </Button>
       </Flex>
-      <Flex
-        w={40}
-        bgColor={"red.100"}
-        justifyContent={"end"}
-        alignItems={"center"}
-      >
+      <Flex w={40} justifyContent={"end"} alignItems={"center"}>
         {signer ? (
-          <Button>{signer.address}</Button>
+          <Menu>
+            <MenuButton
+              as={Button}
+              size={["xs", "xs", "md"]}
+              rightIcon={<FiChevronDown />}
+            >
+              {`${signer.address.substring(0, 5)}...${signer.address.substring(
+                signer.address.length - 4
+              )}`}
+            </MenuButton>
+            <MenuList minW={[20, 20, 40]}>
+              <MenuItem fontSize={[8, 8, 12]} onClick={() => setSigner(null)}>
+                Log Out
+              </MenuItem>
+            </MenuList>
+          </Menu>
         ) : (
-          <Button onClick={handleMetamaskClick}>Metamask</Button>
+          <Button onClick={handleMetamaskClick} size={["xs", "xs", "md"]}>
+            Metamask
+          </Button>
         )}
       </Flex>
     </Flex>

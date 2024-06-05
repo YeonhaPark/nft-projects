@@ -6,11 +6,18 @@ import { ethers } from "ethers";
 
 const Layout: FC = () => {
   const [signer, setSigner] = useState<ethers.JsonRpcSigner | null>(null);
+  const [mintContract, setMintContract] = useState<ethers.Contract | null>(
+    null
+  );
   return (
     <Flex minH={"100vh"} maxW={768} mx={"auto"} flexDir={"column"}>
-      <Header signer={signer} setSigner={setSigner} />
-      <Flex bgColor={"green.100"} flexGrow={1}>
-        <Outlet />
+      <Header
+        signer={signer}
+        setSigner={setSigner}
+        setMintContract={setMintContract}
+      />
+      <Flex flexGrow={1}>
+        <Outlet context={{ mintContract, signer }} />
       </Flex>
     </Flex>
   );
