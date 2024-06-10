@@ -12,12 +12,23 @@ import { FiChevronDown } from "react-icons/fi";
 import { Dispatch, FC, SetStateAction, useEffect } from "react";
 import { ethers, Contract } from "ethers";
 import mintAbi from "../abis/mintAbi.json";
+import saleAbi from "../abis/saleAbi.json";
+import {
+  mintContractAddress,
+  saleContractAddress,
+} from "../abis/contractAddress";
 interface HeaderProps {
   signer: ethers.JsonRpcSigner | null;
   setSigner: Dispatch<SetStateAction<ethers.JsonRpcSigner | null>>;
   setMintContract: Dispatch<SetStateAction<ethers.Contract | null>>;
+  setSaleContract: Dispatch<SetStateAction<ethers.Contract | null>>;
 }
-const Header: FC<HeaderProps> = ({ signer, setSigner, setMintContract }) => {
+const Header: FC<HeaderProps> = ({
+  signer,
+  setSigner,
+  setMintContract,
+  setSaleContract,
+}) => {
   const navigate = useNavigate();
 
   const handleMetamaskClick = async () => {
@@ -26,6 +37,7 @@ const Header: FC<HeaderProps> = ({ signer, setSigner, setMintContract }) => {
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const ret = await provider.getSigner();
+      console.log({ ret });
       setSigner(ret);
     } catch (e) {
       console.log(e);
@@ -36,15 +48,10 @@ const Header: FC<HeaderProps> = ({ signer, setSigner, setMintContract }) => {
     if (!signer) {
       setMintContract(null);
     } else {
-      setMintContract(
-        new Contract(
-          "0xf30b8bbe4a46b7da59f3d55b6c9dcaa1028bbd7a",
-          mintAbi,
-          signer
-        )
-      );
+      setMintContract(new Contract(mintContractAddress, mintAbi, signer));
+      setSaleContract(new Contract(saleContractAddress, saleAbi, signer));
     }
-  }, [signer, setMintContract]);
+  }, [signer, setMintContract, setSaleContract]);
   return (
     <Flex h={24} justifyContent={"space-between"}>
       <Flex

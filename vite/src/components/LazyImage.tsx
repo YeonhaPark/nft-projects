@@ -8,7 +8,15 @@ interface LazyImageProps {
 }
 
 const LazyImage: FC<LazyImageProps> = ({ src, alt }) => {
-  return <Image src={src} alt={alt} alignSelf={"center"} w={60} h={60} />;
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      alignSelf={"center"}
+      w={[60, 60, "unset"]}
+      h={[60, 60, "unset"]}
+    />
+  );
 };
 
 export default LazyImage;

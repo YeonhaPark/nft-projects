@@ -5,6 +5,7 @@ interface Window {
 
 interface OutletContext {
   mintContract: Contract;
+  saleContract: Contract;
   signer: JsonRpcSigner;
 }
 

@@ -9,12 +9,16 @@ const Layout: FC = () => {
   const [mintContract, setMintContract] = useState<ethers.Contract | null>(
     null
   );
+  const [saleContract, setSaleContract] = useState<ethers.Contract | null>(
+    null
+  );
   return (
     <Flex minH={"100vh"} maxW={768} mx={"auto"} flexDir={"column"}>
       <Header
         signer={signer}
         setSigner={setSigner}
         setMintContract={setMintContract}
+        setSaleContract={setSaleContract}
       />
       <Flex flexGrow={1}>
         <Outlet context={{ mintContract, signer }} />
