@@ -143,6 +143,7 @@ const MyNft: FC = () => {
                 key={i}
                 nftMetadata={v}
                 saleContract={saleContract}
+                isApprovedForAll={isApprovedForAll}
                 tokenId={tokenIds[i]}
               />
             ))}

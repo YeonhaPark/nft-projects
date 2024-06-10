@@ -18,3 +18,13 @@ interface NftMetadata {
     value: string;
   }[];
 }
+interface SaleNftMetadata {
+  price: bigint;
+  name: string;
+  description: string;
+  image: string;
+  attributes?: {
+    trait_type: string;
+    value: string;
+  }[];
+}

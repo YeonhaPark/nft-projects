@@ -22,10 +22,17 @@ interface NftCardProps {
   nftMetadata: NftMetadata;
   tokenId: number;
   saleContract: Contract;
+  isApprovedForAll: boolean;
 }
-const NftCard: FC<NftCardProps> = ({ nftMetadata, tokenId, saleContract }) => {
+const NftCard: FC<NftCardProps> = ({
+  nftMetadata,
+  tokenId,
+  saleContract,
+  isApprovedForAll,
+}) => {
   const [currentPrice, setCurrentPrice] = useState<bigint>(0n);
   const [salePrice, setSalePrice] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const getTokenPrice = async () => {
     try {
       const response = await saleContract.getTokenPrice(tokenId);
@@ -37,11 +44,14 @@ const NftCard: FC<NftCardProps> = ({ nftMetadata, tokenId, saleContract }) => {
 
   const onClickSetForSaleNft = async () => {
     try {
+      setIsLoading(true);
       if (!salePrice) return;
       await saleContract.setForSaleNft(tokenId, parseEther(salePrice));
       setCurrentPrice(BigInt(salePrice));
     } catch (e) {
       console.error(e);
+    } finally {
+      setIsLoading(false);
     }
   };
   useEffect(() => {
@@ -78,28 +88,28 @@ const NftCard: FC<NftCardProps> = ({ nftMetadata, tokenId, saleContract }) => {
       </Flex>
       <Flex mt={4}>
         {currentPrice ? (
-          <Text
-            textColor={"white"}
-            bgColor="black"
-            borderRadius={32}
-            padding="6px 12px"
-            fontWeight={"semibold"}
-          >
-            {formatEther(currentPrice)} ETH
-          </Text>
-        ) : (
+          <Text>{formatEther(currentPrice)} ETH</Text>
+        ) : isApprovedForAll ? (
           <>
             <InputGroup>
               <Input
                 value={salePrice}
                 onChange={(e) => setSalePrice(e.target.value)}
+                textAlign="right"
               />
               <InputRightAddon>ETH</InputRightAddon>
             </InputGroup>
-            <Button ml={2} onClick={onClickSetForSaleNft}>
+            <Button
+              ml={2}
+              onClick={onClickSetForSaleNft}
+              isDisabled={isLoading}
+              isLoading={isLoading}
+            >
               등록
             </Button>
           </>
+        ) : (
+          ""
         )}
       </Flex>
     </GridItem>
