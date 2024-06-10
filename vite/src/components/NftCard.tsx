@@ -44,10 +44,11 @@ const NftCard: FC<NftCardProps> = ({
 
   const onClickSetForSaleNft = async () => {
     try {
+      if (!salePrice || isNaN(Number(salePrice))) return;
       setIsLoading(true);
       if (!salePrice) return;
       await saleContract.setForSaleNft(tokenId, parseEther(salePrice));
-      setCurrentPrice(BigInt(salePrice));
+      setCurrentPrice(parseEther(salePrice));
     } catch (e) {
       console.error(e);
     } finally {
