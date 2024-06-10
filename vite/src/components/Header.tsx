@@ -36,6 +36,7 @@ const Header: FC<HeaderProps> = ({
       if (!window.ethereum) return;
 
       const provider = new ethers.BrowserProvider(window.ethereum);
+      console.log({ provider });
       const ret = await provider.getSigner();
       console.log({ ret });
       setSigner(ret);

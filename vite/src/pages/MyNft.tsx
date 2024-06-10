@@ -66,6 +66,10 @@ const MyNft: FC = () => {
     }
   };
 
+  const getIsApprovedForAll = async () => {
+    try {
+    } catch (e) {}
+  };
   useEffect(() => {
     if (!balanceOf) return;
     getNftMetadata();
