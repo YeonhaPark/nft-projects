@@ -42,7 +42,7 @@ const SaleNftCard: FC<SaleNftCardProps> = ({
 
       setNftMetadataArray((prev) =>
         prev.filter((v) => {
-          if (v.name === nftMetadata.name) {
+          if (v.name !== nftMetadata.name) {
             return v;
           }
         })
@@ -55,7 +55,7 @@ const SaleNftCard: FC<SaleNftCardProps> = ({
   };
   const getOwner = async () => {
     try {
-      const ret = await mintContract.owner();
+      const ret = await mintContract.ownerOf(tokenId);
       setOwner(ret);
       console.log({ signerAd: signer.address, owner: ret });
     } catch (e) {
@@ -63,8 +63,9 @@ const SaleNftCard: FC<SaleNftCardProps> = ({
     }
   };
   useEffect(() => {
+    if (!signer || !mintContract) return;
     getOwner();
-  }, []);
+  }, [signer, mintContract]);
   return (
     <GridItem display="flex" flexDir="column">
       <Image

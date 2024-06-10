@@ -16,7 +16,8 @@ const MyNft: FC = () => {
   const [isApprovedForAll, setIsApprovedForAll] = useState<boolean>(false);
   const [isApproveLoading, setIsApproveLoading] = useState<boolean>(false);
   const [tokenIds, setTokenIds] = useState<number[]>([]);
-  const { mintContract, saleContract, signer } =
+
+  const { mintContract, signer, saleContract } =
     useOutletContext<OutletContext>();
 
   const getBalanceOf = async () => {
@@ -34,6 +35,7 @@ const MyNft: FC = () => {
       setIsLoading(true);
 
       const temp: NftMetadata[] = [];
+      const tokenIdTemp: number[] = [];
 
       for (let i = 0; i < PAGE; i++) {
         if (i + currentPage * PAGE >= balanceOf) {
@@ -45,15 +47,17 @@ const MyNft: FC = () => {
           signer?.address,
           i + currentPage * PAGE
         );
-        setTokenIds((prev) => [...prev, Number(tokenOfOwnerByIndex)]);
+
         const tokenURI = await mintContract?.tokenURI(tokenOfOwnerByIndex);
 
         const axiosResponse = await axios.get<NftMetadata>(tokenURI);
 
         temp.push(axiosResponse.data);
+        tokenIdTemp.push(Number(tokenOfOwnerByIndex));
       }
 
       setNftMetadataArray([...nftMetadataArray, ...temp]);
+      setTokenIds([...tokenIds, ...tokenIdTemp]);
       setCurrentPage(currentPage + 1);
       setIsLoading(false);
     } catch (error) {
@@ -79,6 +83,7 @@ const MyNft: FC = () => {
   const onClickSetApprovalForAll = async () => {
     try {
       setIsApproveLoading(true);
+
       const response = await mintContract?.setApprovalForAll(
         saleContractAddress,
         !isApprovedForAll
@@ -87,9 +92,10 @@ const MyNft: FC = () => {
       await response.wait();
 
       setIsApprovedForAll(!isApprovedForAll);
+      setIsApproveLoading(false);
     } catch (error) {
       console.error(error);
-    } finally {
+
       setIsApproveLoading(false);
     }
   };
@@ -113,6 +119,8 @@ const MyNft: FC = () => {
     getNftMetadata();
   }, [balanceOf]);
 
+  useEffect(() => console.log(tokenIds), [tokenIds]);
+
   return (
     <Flex w="100%" alignItems="center" flexDir="column" gap={2} mt={8} mb={20}>
       {signer ? (
@@ -124,7 +132,7 @@ const MyNft: FC = () => {
               onClick={onClickSetApprovalForAll}
               isDisabled={isApproveLoading}
               isLoading={isApproveLoading}
-              loadingText="Loading"
+              loadingText="로딩중"
             >
               {isApprovedForAll ? "취소" : "승인"}
             </Button>
@@ -142,14 +150,15 @@ const MyNft: FC = () => {
               <NftCard
                 key={i}
                 nftMetadata={v}
+                tokenId={tokenIds[i]}
                 saleContract={saleContract}
                 isApprovedForAll={isApprovedForAll}
-                tokenId={tokenIds[i]}
               />
             ))}
           </Grid>
           {!isEnd && (
             <Button
+              mt={8}
               onClick={() => getNftMetadata()}
               isDisabled={isLoading}
               isLoading={isLoading}
