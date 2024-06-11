@@ -1,5 +1,4 @@
 import { Flex, Grid, Text } from "@chakra-ui/react";
-import axios from "axios";
 import { FC, useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import SaleNftCard from "../components/SaleNftCard";
@@ -7,9 +6,7 @@ import SaleNftCard from "../components/SaleNftCard";
 const SaleNft: FC = () => {
   const { signer, mintContract, saleContract } =
     useOutletContext<OutletContext>();
-  const [nftMetadataArray, setNftMetadataArray] = useState<SaleNftMetadata[]>(
-    []
-  );
+
   const [tokenIds, setTokenIds] = useState<number[]>([]);
 
   const getOnSaleTokens = async () => {
@@ -20,31 +17,11 @@ const SaleNft: FC = () => {
       console.error(e);
     }
   };
-  const getNftMetadata = async () => {
-    try {
-      const temp = await Promise.all(
-        tokenIds.map(async (v) => {
-          const tokenURI = await mintContract.tokenURI(v);
-          const price = await saleContract.getTokenPrice(v);
-          const response = await axios.get(tokenURI);
-          return { ...response.data, price };
-        })
-      );
 
-      setNftMetadataArray(temp);
-    } catch (e) {
-      console.error(e);
-    }
-  };
   useEffect(() => {
     if (!saleContract) return;
     getOnSaleTokens();
-  }, [saleContract]);
-
-  useEffect(() => {
-    if (tokenIds.length === 0) return;
-    getNftMetadata();
-  }, [tokenIds]);
+  }, [saleContract, signer]);
 
   useEffect(() => console.log(tokenIds), [tokenIds]);
   return (
@@ -58,14 +35,13 @@ const SaleNft: FC = () => {
           ]}
           gap={6}
         >
-          {nftMetadataArray.map((metadata, i) => (
+          {tokenIds.map((tokenId) => (
             <SaleNftCard
-              key={metadata.name}
-              nftMetadata={metadata}
-              tokenId={tokenIds[i]}
+              key={tokenId}
+              tokenId={tokenId}
               mintContract={mintContract}
               saleContract={saleContract}
-              setNftMetadataArray={setNftMetadataArray}
+              setTokenIds={setTokenIds}
               signer={signer}
             />
           ))}

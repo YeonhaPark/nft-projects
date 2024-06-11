@@ -14,35 +14,41 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Contract, JsonRpcSigner, formatEther } from "ethers";
+import axios from "axios";
 
 interface SaleNftCardProps {
-  nftMetadata: SaleNftMetadata;
   mintContract: Contract;
   saleContract: Contract;
   tokenId: number;
   signer: JsonRpcSigner;
-  setNftMetadataArray: Dispatch<SetStateAction<SaleNftMetadata[]>>;
+  setTokenIds: Dispatch<SetStateAction<number[]>>;
 }
 const SaleNftCard: FC<SaleNftCardProps> = ({
-  nftMetadata,
   saleContract,
   mintContract,
   tokenId,
   signer,
-  setNftMetadataArray,
+  setTokenIds,
 }) => {
   const [owner, setOwner] = useState<string>("");
+  const [metadata, setMetadata] = useState<SaleNftMetadata>({
+    price: 0n,
+    name: "",
+    description: "",
+    image: "",
+    attributes: [{ trait_type: "", value: "" }],
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const purchaseNft = async () => {
     try {
       setIsLoading(true);
       await saleContract.purchaseNft(tokenId, {
-        value: nftMetadata.price,
+        value: metadata.price,
       });
 
-      setNftMetadataArray((prev) =>
+      setTokenIds((prev) =>
         prev.filter((v) => {
-          if (v.name !== nftMetadata.name) {
+          if (v !== tokenId) {
             return v;
           }
         })
@@ -51,6 +57,16 @@ const SaleNftCard: FC<SaleNftCardProps> = ({
       console.error(e);
     } finally {
       setIsLoading(false);
+    }
+  };
+  const getNftMetadata = async () => {
+    try {
+      const tokenURI = await mintContract.tokenURI(tokenId);
+      const price = await saleContract.getTokenPrice(tokenId);
+      const { data }: { data: NftMetadata } = await axios.get(tokenURI);
+      setMetadata({ ...data, price });
+    } catch (e) {
+      console.error(e);
     }
   };
   const getOwner = async () => {
@@ -62,31 +78,32 @@ const SaleNftCard: FC<SaleNftCardProps> = ({
       console.log(e);
     }
   };
+
+  useEffect(() => {
+    if (!mintContract) return;
+    getNftMetadata();
+  }, [mintContract]);
   useEffect(() => {
     if (!signer || !mintContract) return;
     getOwner();
   }, [signer, mintContract]);
   return (
     <GridItem display="flex" flexDir="column">
-      <Image
-        alignSelf="center"
-        src={nftMetadata.image}
-        alt={nftMetadata.name}
-      />
+      <Image alignSelf="center" src={metadata.image} alt={metadata.name} />
       <Popover>
         <PopoverTrigger>
           <Button mt={4} fontSize={24} fontWeight="semibold" variant="link">
-            {nftMetadata.name}
+            {metadata.name}
           </Button>
         </PopoverTrigger>
         <PopoverContent>
           <PopoverArrow />
           <PopoverCloseButton />
-          <PopoverBody>{nftMetadata.description}</PopoverBody>
+          <PopoverBody>{metadata.description}</PopoverBody>
         </PopoverContent>
       </Popover>
       <Flex flexWrap="wrap" mt={4} gap={2}>
-        {nftMetadata.attributes?.map((w, j) => (
+        {metadata.attributes?.map((w, j) => (
           <Box key={j} border="2px solid olive" p={1}>
             <Text borderBottom="2px solid olive">{w.trait_type}</Text>
             <Text>{w.value}</Text>
@@ -95,7 +112,7 @@ const SaleNftCard: FC<SaleNftCardProps> = ({
       </Flex>
       <Flex mt={4}>
         <Text>
-          {formatEther(nftMetadata.price)} ETH
+          {formatEther(metadata.price)} ETH
           {signer.address !== owner && (
             <Button
               ml={2}
