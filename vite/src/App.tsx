@@ -5,6 +5,7 @@ import Layout from "./components/Layout";
 import SaleNft from "./pages/SaleNft";
 import MintNft from "./pages/MintNft";
 import MyNft from "./pages/MyNft";
+import "./index.css";
 
 const App: FC = () => {
   return (
